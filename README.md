@@ -1,2 +1,0 @@
-# TBD
-Game tbd
