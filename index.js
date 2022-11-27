@@ -5,61 +5,8 @@ canvas.width = 1024;
 canvas.height = 576;
 
 const gravity = 0.5;
-
-class Player{
-    constructor(position){
-        this.position = position;
-        this.vel = {
-            x: 0,
-            y: 1,
-        }
-        this.height = 100;
-    }
-
-    draw(){
-        c.fillStyle = 'red';
-        c.fillRect(this.position.x,this.position.y,100,this.height);
-    }
-
-    update(){
-        this.draw();
-        this.position.x += this.vel.x;
-        this.position.y += this.vel.y;
-        if(this.position.y + this.height + this.vel.y< canvas.height)
-            this.vel.y += gravity;
-        else this.vel.y = 0;
-
-    }
-}
-
-class Ball{
-    constructor(position){
-        this.position = position;
-        this.vel = {
-            x: 0,
-            y: 1,
-        }
-        this.height = 25;
-    }
-
-    draw() {
-        c.beginPath();
-        c.arc(this.position.x, this.position.y, 25, 0, 2 * Math.PI);
-        c.fillStyle = "green";
-        c.fill();
-        c.stroke();
-      }
-
-    update(){
-        this.draw();
-        this.position.x += this.vel.x;
-        this.position.y += this.vel.y;
-        if(this.position.y +this.height+ this.vel.y< canvas.height)
-            this.vel.y += gravity;
-        else this.vel.y = 0;
-    }
-}
-
+const bounce = 0.9
+const ballRadius = 25;
 
 const player = new Player({
     x: 100,
@@ -71,7 +18,6 @@ const ball = new Ball({
     y: 100,
 });
 
-
 const keys = {
     ArrowRight: {
         pressed: false,
@@ -81,12 +27,53 @@ const keys = {
     },
 }
 
+function rotate(vel, angle) {
+    const rotatedVelocities = {
+        x: vel.x * Math.cos(angle) - vel.y * Math.sin(angle),
+        y: vel.x * Math.sin(angle) + vel.y * Math.cos(angle)
+    };
+
+    return rotatedVelocities;
+}
+
+function resolveCollision(particle, otherParticle) {
+    const xVelocityDiff = particle.vel.x - otherParticle.vel.x;
+    const yVelocityDiff = particle.vel.y - otherParticle.vel.y;
+
+    const xDist = otherParticle.position.x - particle.position.x;
+    const yDist = otherParticle.position.y - particle.position.y;
+
+    if (xVelocityDiff * xDist + yVelocityDiff * yDist >= 0) {
+
+        // Grab angle between the two colliding particles
+        const angle = -Math.atan2(otherParticle.position.y - particle.position.y, otherParticle.position.x - particle.position.x);
+
+        // Store mass in var for better readability in collision equation
+        const m1 = particle.mass;
+        const m2 = otherParticle.mass;
+
+        // Velocity before equation
+        const u1 = rotate(particle.vel, angle);
+        const u2 = rotate(otherParticle.vel, angle);
+
+        const v2 = { x: u2.x * (m1 - m2) / (m1 + m2) + u1.x * 2 * m2 / (m1 + m2), y: u2.y };
+
+        const vFinal2 = rotate(v2, -angle);
+
+        otherParticle.vel.x = vFinal2.x;
+        otherParticle.vel.y = vFinal2.y;
+    }
+}
+
 function animate(){
     window.requestAnimationFrame(animate);
     c.fillStyle = 'white';
-    c.fillRect(0,0,canvas.width,canvas.height);   
+    c.fillRect(0,0,canvas.width,canvas.height);  
     player.update(); 
     ball.update();
+    if(ball.collision(player)){
+        resolveCollision(player, ball);
+    }
     player.vel.x = 0;
     if(keys.ArrowRight.pressed){
         if(player.position.x >= -player.height && player.position.x <= canvas.width - player.height){

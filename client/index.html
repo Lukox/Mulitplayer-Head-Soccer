@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        #waitScreen {
+            display: none;
+        }
+
+        #initalScreen {
+            display: block;
+        }
+
+        body{
+            background: grey;
+        }
+
+    </style>
+</head>
+<body>
+
+
+    <div id="initialScreen">
+        <h1>Loading in</h1>
+        <button id="creatLobby">creat new instance</button>
+        <br>
+        <input id="roomInput" type="text"><button id="joinRoom">Join a lobby</button>
+        <br>
+    </div>
+
+    <div id="waitScreen">
+        <h1>Waiting for friend to Join!</h1>
+        <div id="message"></div>
+        <button id="createGame">Create Game</button>
+
+    </div>
+
+    <canvas></canvas>
+
+
+    <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+    <script src="client.js"></script>
+</body>
+</html>
