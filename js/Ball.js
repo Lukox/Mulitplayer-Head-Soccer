@@ -27,6 +27,14 @@ class Ball{
         y = player.position.y - this.position.y;
       
         if (a > Math.sqrt((x * x) + (y * y))) {
+          if(this.position.x + ballRadius >= canvas.width){
+            player.vel.x = 0;
+            player.position.x = canvas.width - player.size;
+          }
+          if(this.position.x - ballRadius <= 0){
+            player.vel.x = 0;
+            player.position.x = player.size;
+          }
           return true;
         } else {
           return false;

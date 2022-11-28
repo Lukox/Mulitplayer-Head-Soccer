@@ -8,6 +8,16 @@ const gravity = 0.5;
 const bounce = 0.9
 const ballRadius = 25;
 
+const playerImg = document.createElement('img');
+playerImg.src = 'son2.png';
+playerImg.style.borderRadius = '50%';
+
+const player2Img = document.createElement('img');
+player2Img.src = 'son1.png';
+player2Img.style.borderRadius = "50%";
+
+let currPlayerImg = playerImg;
+
 const player = new Player({
     x: 100,
     y: 100,
@@ -23,6 +33,9 @@ const keys = {
         pressed: false,
     },
     ArrowLeft: {
+        pressed: false,
+    },
+    Space: {
         pressed: false,
     },
 }
@@ -67,8 +80,8 @@ function resolveCollision(particle, otherParticle) {
 
 function animate(){
     window.requestAnimationFrame(animate);
-    c.fillStyle = 'white';
-    c.fillRect(0,0,canvas.width,canvas.height);  
+    c.fillStyle='pink';
+    c.fillRect(0,0,canvas.width,canvas.height); 
     player.update(); 
     ball.update();
     if(ball.collision(player)){
@@ -80,9 +93,17 @@ function animate(){
             player.vel.x = 5;
         }
     } else if (keys.ArrowLeft.pressed){
-        if(player.position.x >= 0 && player.position.x <= canvas.width){
+        if(player.position.x - 2*ballRadius >= 0 && player.position.x <= canvas.width){
             player.vel.x = -5;
         }
+    }
+}
+
+function kick(){
+    if(ball.position.x <= player.position.x +player.size && ball.position.x > player.position.x && ball.position.y + ballRadius >= player.position.y && ball.position.y <= player.position.y + player.size + ballRadius){
+        ball.vel.y = Math.abs(ball.vel.y) + 10
+        ball.vel.x *= -1;
+        ball.vel.x += 10;
     }
 }
 
@@ -99,20 +120,25 @@ window.addEventListener('keydown', (event) =>{
             break;
         case 'ArrowUp':
             if(player.position.y == (canvas.height - player.height)){
-                player.vel.y = -17;
+                player.vel.y = -15;
             } 
             break;
+        case ' ':
+            currPlayerImg = player2Img
+            kick()
     }
 })
 
-window.addEventListener('keyup', (event) =>{
-    console.log(event); 
+window.addEventListener('keyup', (event) =>{ 
     switch(event.key){
         case 'ArrowRight':
             keys.ArrowRight.pressed = false;
             break;
         case 'ArrowLeft':
             keys.ArrowLeft.pressed = false;
+            break;
+        case ' ':
+            currPlayerImg = playerImg;
             break;
     }
 })

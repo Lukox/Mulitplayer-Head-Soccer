@@ -11,11 +11,7 @@ class Player{
     }
 
     draw(){
-        c.beginPath();
-        c.arc(this.position.x, this.position.y, 2*ballRadius, 0, 2 * Math.PI);
-        c.fillStyle = "red";
-        c.fill();
-        c.stroke();
+        c.drawImage(currPlayerImg, this.position.x - player.size/2, this.position.y - player.size/2, 100,100);
     }
 
     update(){
@@ -25,6 +21,5 @@ class Player{
         if(this.position.y + this.height + this.vel.y< canvas.height)
             this.vel.y += gravity;
         else this.vel.y = 0;
-
     }
 }
