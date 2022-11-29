@@ -1,6 +1,5 @@
-//gg
-const FRAME_RATE = 10;
+const FRAME_RATE = 240;
 
 module.exports = {
     FRAME_RATE,
-}
+}   

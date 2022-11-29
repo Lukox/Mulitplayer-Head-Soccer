@@ -4,8 +4,9 @@ const io = require("socket.io")(3000, {
     },
 });
 
-const { createGameState, gameLoop, getNewVelocity } = require('./game');
+const { createGameState, gameLoop, getNewDownVelocity, stopPlayerMovement } = require('./game');
 const { FRAME_RATE } = require('./constants');
+
 
 //for each player it contains the lobby they are in 1 -> 1
 let lobbies = {};
@@ -23,26 +24,33 @@ io.on('connection', socket => {
     //joining Room
     socket.on("joinRoom", room => {
         // checking if the room exists and then joining the user to that room
-        if (Object.values(lobbies).includes(room)) {
-            let count = 0;
-            Object.values(lobbies).forEach(element => {
-                if (element === room){
-                    count += 1;
-                }
-            });
-            if (count == 1){
-                socket.emit("successJoinRoom", room);
-                socket.join(room);
-                lobbies[socket.id] = room;
-                socket.number = 2;
-            } else {
-                socket.emit("roomFull");
-            }
-        } else {
-            socket.emit("roomNoExists"); 
+        if (!Object.values(lobbies).includes(room)) {
+            socket.emit("roomNoExists");
+            return; 
         }
-        
-        // console.log(room);
+
+        let count = 0;
+        Object.values(lobbies).forEach(element => {
+            if (element === room){
+                count += 1;
+            }
+        });
+
+        if (count > 1){
+            socket.emit("roomFull");
+            return;
+        } 
+
+        socket.emit("successJoinRoom", room);
+        socket.join(room);
+        lobbies[socket.id] = room;
+        socket.number = 2;
+
+        //start the game
+        startGameInterval(room);
+
+        socket.broadcast.to(room).emit("removeWait");
+
     });
 
     //creating new Room
@@ -53,42 +61,42 @@ io.on('connection', socket => {
         socket.join(roomId);
         socket.emit("createdRoom", roomId);
         socket.number = 1;
-        // console.log(lobbies[socket.id]);
+        const state = createGameState();
+        states[roomId] = state;
     });
 
 
     //handling pressing buttons
     socket.on("keydown", handleKeyDown);
 
-    function handleKeyDown(keyCode){
+    function handleKeyDown(key){
 
         if (!lobbies[socket.id]) {
             return;
         }
-
-        try {
-            keyCode = parseInt(keyCode);
-        } catch (e) {
-            console.error(e);
-            return;
-        }
-
-        let newVelocity = getNewVelocity(keyCode);
-
-        if (newVelocity) {
-            let room = lobbies[socket.id];
-            states[room].players[socket.number - 1].velocity = newVelocity;
-        }
-
+        let room = lobbies[socket.id];
+        let state = states[room];
+        let playerNumber = socket.number;
+        getNewDownVelocity(key, state, playerNumber);    
     };
 
+    socket.on("keyup", handleKeyUp);
+
+    function handleKeyUp(key){
+        if (!lobbies[socket.id]) {
+            return;
+        }
+        let room = lobbies[socket.id];
+        let state = states[room];
+        let playerNumber = socket.number;
+        stopPlayerMovement(key, state, playerNumber);
+    };
 
     //handling creating Game
     socket.on("createGame",(clientId) => {
         let room = lobbies[clientId];
         const state = createGameState();
         states[room] = state;
-
         startGameInterval(room);
     });
 
@@ -102,8 +110,6 @@ function startGameInterval(room){
 
         if(!winner){
             io.to(room).emit("newState", JSON.stringify(state));
-            states[room].players[0].velocity = {x: 0, y:0};
-            states[room].players[1].velocity = {x: 0, y:0};
         } else {
             io.to(room).emit("gameOver");
             clearInterval(intervalId);

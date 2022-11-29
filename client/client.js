@@ -3,9 +3,20 @@ const socket = io('http://localhost:3000');
 const initialScreen = document.getElementById("initialScreen");
 const joinRoomBtn = document.getElementById("joinRoom");
 const roomInput = document.getElementById("roomInput");
-const createLobbyBtn = document.getElementById("creatLobby");
+const createLobbyBtn = document.getElementById("createLobby");
 const createGameBtn = document.getElementById("createGame");
 const waitScreen = document.getElementById("waitScreen");
+
+let canvas, c;
+
+//loading assets
+//loading assets
+const pitch = document.createElement('img');
+pitch.src = './assets/football_pitch_1st_draft.jpg';
+const son1 = document.createElement('img');
+son1.src = './assets/son_shoe_bot_transparent.png';
+const son2 = document.createElement('img');
+son2.src = './assets/son_shoe_bot_transparent.png';
 
 //handling receiving msg
 socket.on('newMsg', msg => {
@@ -18,9 +29,7 @@ socket.on("newState", handleNewState);
 // handling joining room
 socket.on('successJoinRoom', room => {
     initialScreen.style.display = "none";
-    waitScreen.style.display = "block";
-    msg = "joined " + room;
-    displayMsg(msg);
+    init();
 });
 
 socket.on('roomFull', () => {
@@ -35,8 +44,13 @@ socket.on('roomNoExists', () => {
 socket.on('createdRoom', room => {
     initialScreen.style.display = "none";
     waitScreen.style.display = "block";
-    msg = "joined " + room;
+    msg = "Room code: " + room;
     displayMsg(msg);
+    init();
+});
+
+socket.on('removeWait', () => {
+    waitScreen.style.display = "none";
 });
 
 // button listeners
@@ -55,169 +69,57 @@ createGameBtn.addEventListener('click', function(e){
     socket.emit("createGame", socket.id);   
 });
 
-//displaying messages on screen
 function displayMsg(msg) {
     let item = document.createElement('p');
     item.innerHTML = msg;
     document.getElementById("message").append(item);
 }
 
-
-
-//code for game to be integrated
-const canvas = document.querySelector('canvas');
-const c = canvas.getContext('2d');
-
-document.addEventListener('keydown', keydown);
-
-canvas.width = 1024;
-canvas.height = 500;
-
-function paintGame(state) {
-    c.fillStyle = 'white';
-    c.fillRect(0,0,canvas.width,canvas.height);  
+function init() {
+    canvas = document.querySelector('canvas');
+    c = canvas.getContext('2d');
+    canvas.width = 1024;
+    canvas.height = 500;
     
-    paintPlayer(state.players[0]);
-    paintPlayer(state.players[1]);
+    document.addEventListener('keydown', keydown);
+    document.addEventListener('keyup', keyup);
+}
+
+function paintGame(state) { 
+    c.drawImage(pitch, 0, 0, canvas.width, canvas.height);
+    
+    paintPlayer(state.players[0], 0);
+    paintPlayer(state.players[1], 1);
+    paintBall(state.ball);
 };
 
-function paintPlayer(player) {
-    c.fillStyle = player.colour;
-    c.fillRect(player.position.x, player.position.y, player.size, player.size);
+function paintPlayer(player, playerNum) {
+    // c.fillStyle = player.colour;
+    // c.fillRect(player.position.x, player.position.y, player.size, player.size);
+    if (playerNum) {
+        c.drawImage(son2, player.position.x - player.radius, player.position.y - player.radius, player.size, player.size);   
+    } else {
+        c.drawImage(son1, player.position.x - player.radius, player.position.y - player.radius, player.size, player.size);
+    }
+};
+
+function paintBall(ball){
+    c.beginPath();
+    c.arc(ball.position.x, ball.position.y, ball.size, 0, 2 * Math.PI);
+    c.fillStyle = "red";
+    c.fill();
+    c.stroke();
 };
 
 function keydown(e){
-    socket.emit("keydown", e.keyCode);
-    // console.log(e.key);
+    socket.emit("keydown", e.key);
+}
+
+function keyup(e){
+    socket.emit("keyup", e.key);
 }
 
 function handleNewState(gameState) {
     gameState = JSON.parse(gameState);
     requestAnimationFrame(() => paintGame(gameState));
 };
-
-//original below
-
-// const gravity = 0.5;
-
-// class Player{
-//     constructor(position){
-//         this.position = position;
-//         this.vel = {
-//             x: 0,
-//             y: 1,
-//         }
-//         this.height = 100;
-//     }
-
-//     draw(){
-//         c.fillStyle = 'red';
-//         c.fillRect(this.position.x,this.position.y,100,this.height);
-//     }
-
-//     update(){
-//         this.draw();
-//         this.position.x += this.vel.x;
-//         this.position.y += this.vel.y;
-//         if(this.position.y + this.height + this.vel.y< canvas.height)
-//             this.vel.y += gravity;
-//         else this.vel.y = 0;
-
-//     }
-// }
-
-// class Ball{
-//     constructor(position){
-//         this.position = position;
-//         this.vel = {
-//             x: 0,
-//             y: 1,
-//         }
-//         this.height = 25;
-//     }
-
-//     draw() {
-//         c.beginPath();
-//         c.arc(this.position.x, this.position.y, 25, 0, 2 * Math.PI);
-//         c.fillStyle = "green";
-//         c.fill();
-//         c.stroke();
-//       }
-
-//     update(){
-//         this.draw();
-//         this.position.x += this.vel.x;
-//         this.position.y += this.vel.y;
-//         if(this.position.y +this.height+ this.vel.y< canvas.height)
-//             this.vel.y += gravity;
-//         else this.vel.y = 0;
-//     }
-// }
-
-
-// const player = new Player({
-//     x: 100,
-//     y: 100,
-// });
-
-// const ball = new Ball({
-//     x:300,
-//     y: 100,
-// });
-
-
-// const keys = {
-//     ArrowRight: {
-//         pressed: false,
-//     },
-//     ArrowLeft: {
-//         pressed: false,
-//     },
-// }
-
-// function animate(){
-//     window.requestAnimationFrame(animate);
-//     c.fillStyle = 'white';
-//     c.fillRect(0,0,canvas.width,canvas.height);   
-//     player.update(); 
-//     // ball.update();
-//     player.vel.x = 0;
-//     if(keys.ArrowRight.pressed){
-//         if(player.position.x >= -player.height && player.position.x <= canvas.width - player.height){
-//             player.vel.x = 5;
-//         }
-//     } else if (keys.ArrowLeft.pressed){
-//         if(player.position.x >= 0 && player.position.x <= canvas.width){
-//             player.vel.x = -5;
-//         }
-//     }
-// }
-
-// window.addEventListener('keydown', (event) =>{
-//     console.log(event); 
-//     switch(event.key){
-//         case 'ArrowRight':
-//             keys.ArrowRight.pressed = true;
-//             break;
-//         case 'ArrowLeft':
-//             keys.ArrowLeft.pressed = true;
-//             break;
-//         case 'ArrowUp':
-//             if(player.position.y == (canvas.height - player.height)){
-//                 player.vel.y = -17;
-//             } 
-//             break;
-//     }
-// })
-
-// window.addEventListener('keyup', (event) =>{
-//     console.log(event); 
-//     switch(event.key){
-//         case 'ArrowRight':
-//             keys.ArrowRight.pressed = false;
-//             break;
-//         case 'ArrowLeft':
-//             keys.ArrowLeft.pressed = false;
-//             break;
-//     }
-// })
