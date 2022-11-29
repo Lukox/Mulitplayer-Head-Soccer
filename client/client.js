@@ -10,13 +10,14 @@ const waitScreen = document.getElementById("waitScreen");
 let canvas, c;
 
 //loading assets
-//loading assets
 const pitch = document.createElement('img');
 pitch.src = './assets/football_pitch_1st_draft.jpg';
 const son1 = document.createElement('img');
 son1.src = './assets/son_shoe_bot_transparent.png';
 const son2 = document.createElement('img');
 son2.src = './assets/son_shoe_bot_transparent.png';
+const kickingSon = document.createElement('img');
+kickingSon.src = './assets/kicking_son.png';
 
 //handling receiving msg
 socket.on('newMsg', msg => {

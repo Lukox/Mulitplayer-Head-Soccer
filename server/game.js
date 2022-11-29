@@ -77,6 +77,15 @@ function gameLoop(state){
     updatePlayer(playerOne, ball);
     updatePlayer(playerTwo, ball);
     updateBall(ball);
+
+    if (playerOne.kicking) {
+        kickRight(playerOne, ball);
+        // console.log("player1 kicking");
+    }
+    if (playerTwo.kicking) {
+        kickLeft(playerTwo, ball);
+        // console.log("player2 kicking");
+    }
     
     //no winning implemented so always just continue    
     return false;
@@ -205,7 +214,7 @@ function resolveCollision(particle, otherParticle) {
         const v2 = { x: u2.x * (m1 - m2) / (m1 + m2) + u1.x * 2 * m2 / (m1 + m2), y: u2.y };
 
         const vFinal2 = rotate(v2, -angle);
-        
+
         otherParticle.velocity.x = vFinal2.x;
         otherParticle.velocity.y = vFinal2.y;
     }
@@ -218,4 +227,21 @@ function rotate(vel, angle) {
     };
 
     return rotatedVelocities;
+}
+
+function kickRight(player, ball){
+    if(ball.position.x <= player.position.x +player.size && ball.position.x > player.position.x && ball.position.y + ball.size >= player.position.y && ball.position.y <= player.position.y + player.size + ball.size){
+        ball.velocity.y = Math.abs(ball.velocity.y) + 10
+        ball.velocity.x *= -1;
+        ball.velocity.x += 10;
+    }
+}
+    
+//2nd Player On right side
+function kickLeft(player, ball){
+    if(ball.position.x >= player.position.x - player.size && ball.position.x < player.position.x && ball.position.y + ball.size >= player.position.y && ball.position.y <= player.position.y + player.size + ball.size){
+        ball.velocity.y = Math.abs(ball.velocity.y) + 10
+        ball.velocity.x *= -1;
+        ball.velocity.x -= 10;
+    }
 }

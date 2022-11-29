@@ -77,7 +77,21 @@ io.on('connection', socket => {
         let room = lobbies[socket.id];
         let state = states[room];
         let playerNumber = socket.number;
-        getNewDownVelocity(key, state, playerNumber);    
+        getNewDownVelocity(key, state, playerNumber);  
+        if (key != ' ') {
+            let newVelocity = getNewDownVelocity(key, state, playerNumber);
+
+            if (newVelocity) {
+                if (newVelocity[0] === 'x') {
+                    states[room].players[socket.number - 1].velocity.x = newVelocity[1];
+                } else if (newVelocity[0] === 'y'){
+                    states[room].players[socket.number - 1].velocity.y = newVelocity[1];         
+                }
+            }   
+        } else {
+            states[room].players[socket.number -1].kicking = true;
+            // console.log("player " + socket.number + ": kicked");
+        }  
     };
 
     socket.on("keyup", handleKeyUp);
@@ -90,6 +104,11 @@ io.on('connection', socket => {
         let state = states[room];
         let playerNumber = socket.number;
         stopPlayerMovement(key, state, playerNumber);
+        if (key != ' ') {
+            states[room].players[socket.number - 1].velocity.x = 0;   
+        } else {
+            states[room].players[socket.number -1].kicking = false;
+        }
     };
 
     //handling creating Game
