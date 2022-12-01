@@ -101,19 +101,20 @@ function animate(){
 
 function kick(){
     if(ball.position.x <= player.position.x +player.size && ball.position.x > player.position.x && ball.position.y + ballRadius >= player.position.y && ball.position.y <= player.position.y + player.size + ballRadius){
-        ball.vel.y = Math.abs(ball.vel.y) + 10
+        ball.vel.y = ball.vel.y + 10
         ball.vel.x *= -1;
         ball.vel.x += 10;
     }
 
     
-    //2nd Player On right side
+    /*2nd Player On right side
 
     if(ball.position.x >= player.position.x - player.size && ball.position.x < player.position.x && ball.position.y + ballRadius >= player.position.y && ball.position.y <= player.position.y + player.size + ballRadius){
         ball.vel.y = Math.abs(ball.vel.y) + 10
         ball.vel.x *= -1;
         ball.vel.x -= 10;
     }
+    */
     
 
 }
