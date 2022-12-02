@@ -79,24 +79,11 @@ function gameLoop(state){
     const playerTwo = state.players[1];
     const ball = state.ball;
     updatePlayerPosition(playerOne);
-    //playerOne.velocity.x = 5;
-    //playerOne.position.x +=5;
     updatePlayerPosition(playerTwo);
     if(collision(playerOne, playerTwo)){
         resolvePlayerCollision(playerOne, playerTwo);
     }
-    //forget below
-    updateBall(ball);
-    while(collision(playerOne, ball) || collision(playerTwo, ball)){
-        if(collision(playerOne, ball)){
-            resolveCollision(playerOne, ball);
-        }
-        if(collision(playerTwo, ball)){
-            resolveCollision(playerTwo, ball);   
-        }
-    }
-
-    /*if (playerOne.kicking) {
+    if (playerOne.kicking) {
         kickRight(playerOne, ball);
         // console.log("player1 kicking");
     }
@@ -104,12 +91,29 @@ function gameLoop(state){
         kickLeft(playerTwo, ball);
         // console.log("player2 kicking");
     }
-    updatePlayer(playerOne, ball);
-    updatePlayer(playerTwo, ball);
-    updateBall(ball);
-    
+    let player1Velocity = [0,0];
+    let player2Velocity = [0,0];
+    if(collision(playerOne, ball)){
+        player1Velocity = resolveCollision(playerOne, ball);
+        console.log(player1Velocity[1]);
+    }
+    if(collision(playerTwo, ball)){
+        player2Velocity = resolveCollision(playerTwo, ball);   
+        console.log(player2Velocity[1]);
+
+    }
+    let resultantX = player1Velocity[0] + player2Velocity[0];
+    let resultantY = player1Velocity[1] + player2Velocity[1];
+    if(resultantX != 0){
+        ball.velocity.x = resultantX
+    }
+    if(resultantY != 0){
+        ball.velocity.y = resultantY;
+    }
+    updateBall(ball, playerOne, playerTwo);
+
     //no winning implemented so always just continue    
-    return false;*/
+    return false;
 };
 
 
@@ -128,6 +132,7 @@ function getNewDownVelocity(key, state, playerNumber) {
                 player.velocity.y = -15;
             }
             break;
+        
     }
 }
 
@@ -217,29 +222,49 @@ function updatePlayerPosition(player){
     }
 }
 
-function updateBall(ball) {
-        ball.position.x += ball.velocity.x;
-        //floor
-        if(ball.position.y + ball.size + ball.velocity.y <= 420){
-            ball.velocity.y += 0.5;
-        } else {
-            ball.velocity.y = -ball.velocity.y * ball.bounce;
-        }
-        ball.position.y += ball.velocity.y;
+function updateBall(ball, playerOne, playerTwo) {
     
-        //side
-        if(ball.position.x -ball.size <= 0 || ball.position.x+ball.size >= 1024){
-            ball.velocity.x *= -1 * ball.bounce;
-            if(ball.velocity.x > 0)
-                ball.position.x = ball.size;
-            else ball.position.x = 1024-ball.size;
-        }
+    let player1Velocity = [0,0];
+    let player2Velocity = [0,0];
+    if(collision(playerOne, ball)){
+        player1Velocity = resolveCollision(playerOne, ball);
+    }
+    if(collision(playerTwo, ball)){
+        player2Velocity = resolveCollision(playerTwo, ball);   
+    }
+    let resultantX = player1Velocity[0] + player2Velocity[0];
+    let resultantY = player1Velocity[1] + player2Velocity[1];
+    if(resultantX != 0){
+        ball.velocity.x = resultantX
+    }
+    if(resultantY != 0){
+        ball.velocity.y = resultantY;
+    }
 
-        //ceiling
-        if(ball.position.y - ball.size <= 0){
-            ball.position.y = ball.size;
-            ball.velocity.y *= -1 * ball.bounce;
-        }
+    //floor
+    if(ball.position.y + ball.size + ball.velocity.y <= 420){
+        ball.velocity.y += 0.5;
+    } else {
+       ball.velocity.y = -ball.velocity.y * ball.bounce;
+    }
+
+    //side
+    if(ball.position.x -ball.size <= 0 || ball.position.x+ball.size >= 1024){
+        ball.velocity.x *= -1 * ball.bounce;
+        if(ball.velocity.x > 0)
+            ball.position.x = ball.size;
+        else ball.position.x = 1024-ball.size;
+    }
+
+    //ceiling
+    if(ball.position.y - ball.size <= 0){
+        ball.position.y = ball.size;
+        ball.velocity.y *= -1 * ball.bounce;
+    }
+
+    ball.position.x += ball.velocity.x;
+    ball.position.y += ball.velocity.y;
+
 };
 
 function collision(circle1, circle2) {
@@ -275,8 +300,9 @@ function resolveCollision(particle, otherParticle) {
 
         const vFinal2 = rotate(v2, -angle);
 
-        otherParticle.velocity.x = vFinal2.x;
-        otherParticle.velocity.y = vFinal2.y;
+        return [vFinal2.x, vFinal2.y];
+    }else{
+        return[0,0];
     }
 }
 
@@ -291,17 +317,17 @@ function rotate(vel, angle) {
 
 function kickRight(player, ball){
     if(ball.position.x <= player.position.x +player.size && ball.position.x > player.position.x && ball.position.y + ball.size >= player.position.y && ball.position.y <= player.position.y + player.size + ball.size){
-        ball.velocity.y = Math.abs(ball.velocity.y) + 6;
+        ball.velocity.y = -13;
         ball.velocity.x *= -1;
-        ball.velocity.x += 10;
+        ball.velocity.x += 5;
     }
 }
     
 //2nd Player On right side
 function kickLeft(player, ball){
     if(ball.position.x >= player.position.x - player.size && ball.position.x < player.position.x && ball.position.y + ball.size >= player.position.y && ball.position.y <= player.position.y + player.size + ball.size){
-        ball.velocity.y = ball.velocity.y + 10;
+        ball.velocity.y = -13;
         ball.velocity.x *= -1;
-        ball.velocity.x -= 10;
+        ball.velocity.x -= 5;
     }
 }
