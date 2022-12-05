@@ -1,1 +1,1 @@
-# MPgame
+# Multiplayer browser game using socket.io 

@@ -8,11 +8,30 @@ body{
 
 #waitScreen {
     display: none;
+    text-align: center;
+}
+
+#readyScreen {
+    display: none;
 }
 
 #initalScreen {
     display: block;
 }
+
+#gameScreen {
+    display: none;
+    text-align: center;
+}
+
+#endScreen {
+    display: none;
+    text-align: center;
+}
+
+/* #message {
+    margin:0 auto;
+} */
 
 #welcome{
     color:black;
@@ -34,6 +53,14 @@ body{
     font-size: 20px;
     font-family: 'Nerko One', cursive;
 }
+
+#message{
+    width: 500;
+    height: 200;
+    font-size: 100px;
+    font-family: 'Nerko One', cursive;
+}
+
 .square{
     height: 400px;
     width: 400px;
