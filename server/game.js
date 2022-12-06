@@ -47,7 +47,7 @@ function createGameState() {
         },
         size: 100,
         colour: "red",
-        mass: 1,
+        mass: 2,
         radius: 50,
         kicking: false,
         goalsScored: 0,
@@ -69,7 +69,7 @@ function createGameState() {
         },
         size: 100,
         colour: "blue",
-        mass: 1,
+        mass: 2,
         radius: 50,
         kicking: false,
         goalsScored: 0,
@@ -98,7 +98,7 @@ function createGameState() {
       },
       dimensions: {
           x: 0,
-          y: 190,
+          y: 175,
           length: 90,
       },
     },
@@ -109,7 +109,7 @@ function createGameState() {
       },
       dimensions: {
           x: 0,
-          y: 190,
+          y: 175,
           length: 90,
       },
     },
@@ -127,7 +127,6 @@ function gameLoop(state) {
   const ball = state.ball;
   const leftGoal = state.leftGoal;
   const rightGoal = state.rightGoal;
-
   updatePlayerPosition(playerOne);
   updatePlayerPosition(playerTwo);
   if (collision(playerOne, playerTwo)) {
@@ -141,26 +140,14 @@ function gameLoop(state) {
     kickLeft(playerTwo, ball);
     // console.log("player2 kicking");
   }
-  let player1Velocity = [0, 0];
-  let player2Velocity = [0, 0];
   if (collision(playerOne, ball)) {
-    player1Velocity = resolveCollision(playerOne, ball);
-    // console.log(player1Velocity[1]);
+    resolveCollision(playerOne, ball);
   }
   if (collision(playerTwo, ball)) {
-    player2Velocity = resolveCollision(playerTwo, ball);
-    // console.log(player2Velocity[1]);
-  }
-  let resultantX = player1Velocity[0] + player2Velocity[0];
-  let resultantY = player1Velocity[1] + player2Velocity[1];
-  if (resultantX != 0) {
-    ball.velocity.x = resultantX;
-  }
-  if (resultantY != 0) {
-    ball.velocity.y = resultantY;
+    resolveCollision(playerTwo, ball);
   }
   updateBall(ball, playerOne, playerTwo);
-
+  checkWall(ball, playerOne, playerTwo);
   // check for goal scored
   if(checkLeftGoal(ball, leftGoal)){
     resetGameState(state);
@@ -191,7 +178,7 @@ function checkLeftGoal(ball, goal){
 }
 
 function checkRightGoal(ball, goal){
-  if(ball.position.x + ball.radius > 1024 - goal.dimensions.length && ball.position.y - ball.radius> goal.position.y - goal.dimensions.y){
+  if(ball.position.x - ball.radius > 1024 - goal.dimensions.length && ball.position.y - ball.radius> goal.position.y - goal.dimensions.y){
       return true;
   }else{
       return false;
@@ -248,6 +235,41 @@ function checkWallCollision(player1, player2) {
   }
 }
 
+function checkWall(ball, player1, player2){
+  if(player1.position.x - player1.radius < 0){
+    let diff = -(player1.position.x - player1.radius) ;
+    player1.position.x = player1.radius;
+    ball.position.x += diff;
+    if(collision(ball, player2)){
+      player2.position.x += diff;
+    }
+  }
+  if(player1.position.x + player1.radius > 1024){
+    let diff = player1.position.x + player1.radius - 1024;
+    player1.position.x = 1024 - player1.radius;
+    ball.position.x -= diff;
+    if(collision(ball, player2)){
+      player2.position.x -= diff;
+    }
+  }
+  if(player2.position.x - player2.radius < 0){
+    let diff = -(player2.position.x - player2.radius) ;
+    player2.position.x = player2.radius;
+    ball.position.x += diff;
+    if(collision(ball, player1)){
+      player1.position.x += diff;
+    }
+  }
+  if(player2.position.x + player2.radius > 1024){
+    let diff = player2.position.x + player2.radius - 1024;
+    player2.position.x = 1024 - player2.radius;
+    ball.position.x -= diff;
+    if(collision(ball, player1)){
+      player1.position.x -= diff;
+    }
+  }
+}
+
 function resolvePlayerCollision(player1, player2) {
   let distanceX = player1.position.x - player2.position.x;
   let distanceY = player1.position.y - player2.position.y;
@@ -272,6 +294,74 @@ function resolvePlayerCollision(player1, player2) {
     player2.position.y = 420 - player2.radius;
   }
   checkWallCollision(player1, player2);
+}
+
+function resolveCollision(player, ball, player2)
+{
+    // get the mtd
+    let xdiff = player.position.x - ball.position.x;
+    let ydiff = player.position.y - ball.position.y;
+    let d = Math.sqrt(xdiff*xdiff + ydiff*ydiff);
+    // minimum translation distance to push balls apart after intersecting
+    let xmtd = xdiff*(((player.radius + ball.radius)-d)/d);
+    let ymtd = ydiff*(((player.radius + ball.radius)-d)/d);
+    // resolve intersection --
+    // inverse mass quantities
+    let im1 = 1/player.mass;
+    let im2 = 1/ball.mass;
+
+    // push-pull them apart based off their mass
+    player.position.x += (xmtd*(im1 / (im1 + im2)));
+    player.position.y += (ymtd*(im1 / (im1 + im2)));
+    //position = position.add(mtd.multiply(im1 / (im1 + im2)));
+    ball.position.x -= (xmtd*(im2 / (im1 + im2)));
+    ball.position.y -= (ymtd*(im2 / (im1 + im2)));
+    if(player.position.y + player.radius> 420){
+      let diff = player.position.y + player.radius - 420;
+      player.position.y -= diff;
+      ball.position.y -= diff;
+    }
+    if(ball.position.y + ball.radius > 420){
+      ball.position.y = 420 - ball.radius;
+    }
+
+    // impact speed
+    let xveldiff = player.velocity.x - ball.velocity.x;
+    let yveldiff = player.velocity.y - ball.velocity.y;
+    let len = Math.sqrt(xmtd*xmtd + ymtd*ymtd);
+		if (len != 0.0){
+      xmtd = xmtd / len;
+      ymtd = ymtd / len;
+		}
+		else
+		{
+      xmtd = 0.0;
+      ymtd = 0.0;
+		}
+    let vn = xveldiff * xmtd + yveldiff * ymtd;
+
+    // sphere intersecting but moving away from each other already
+    if (vn > 0.0) return;
+
+    // collision impulse
+    let i = (-(1.0 + ball.bounce) * vn) / (im1 + im2);
+    len = Math.sqrt(xmtd*xmtd + ymtd*ymtd);
+		if (len != 0.0){
+      xmtd = xmtd / len;
+      ymtd = ymtd / len;
+		}
+		else
+		{
+      xmtd = 0.0;
+      ymtd = 0.0;
+		}
+    let ximpulse = xmtd * i;
+    let yimpulse = ymtd * i;
+
+    // change in momentum
+    //this.velocity = this.velocity.add(impulse.multiply(im1));
+    ball.velocity.x -= (ximpulse * im2);
+    ball.velocity.y -= (yimpulse * im2);
 }
 
 function updatePlayerPosition(player) {
@@ -301,24 +391,7 @@ function updatePlayerPosition(player) {
   }
 }
 
-function updateBall(ball, playerOne, playerTwo) {
-  let player1Velocity = [0, 0];
-  let player2Velocity = [0, 0];
-  if (collision(playerOne, ball)) {
-    player1Velocity = resolveCollision(playerOne, ball);
-  }
-  if (collision(playerTwo, ball)) {
-    player2Velocity = resolveCollision(playerTwo, ball);
-  }
-  let resultantX = player1Velocity[0] + player2Velocity[0];
-  let resultantY = player1Velocity[1] + player2Velocity[1];
-  if (resultantX != 0) {
-    ball.velocity.x = resultantX;
-  }
-  if (resultantY != 0) {
-    ball.velocity.y = resultantY;
-  }
-
+function updateBall(ball) {
   //floor
   if (ball.position.y + ball.size + ball.velocity.y <= 420) {
     ball.velocity.y += 0.5;
@@ -351,7 +424,7 @@ function collision(circle1, circle2) {
     return true;
   return false;
 }
-
+/*
 function resolveCollision(particle, otherParticle) {
   const xVelocityDiff = particle.velocity.x - otherParticle.velocity.x;
   const yVelocityDiff = particle.velocity.y - otherParticle.velocity.y;
@@ -386,6 +459,7 @@ function resolveCollision(particle, otherParticle) {
     return [0, 0];
   }
 }
+*/
 
 function rotate(vel, angle) {
   const rotatedVelocities = {
