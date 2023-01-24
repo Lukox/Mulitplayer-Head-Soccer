@@ -122,11 +122,7 @@ function paintGame(state) {
     score.innerHTML = scoreMsg;
 
     c.drawImage(pitch, 0, 0, canvas.width, canvas.height);
-    
-    c.fillStyle = 'white';
-    c.fillRect(0,245,90,175);  
 
-    
     paintPlayers(state);
     paintBall(state.ball);
 };

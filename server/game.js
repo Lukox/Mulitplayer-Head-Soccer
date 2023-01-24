@@ -98,8 +98,9 @@ function createGameState() {
       },
       dimensions: {
           x: 0,
-          y: 175,
+          y: 180,
           length: 90,
+          crossbarHeight: 5,
       },
     },
     rightGoal: {
@@ -109,8 +110,9 @@ function createGameState() {
       },
       dimensions: {
           x: 0,
-          y: 175,
+          y: 180,
           length: 90,
+          crossbarHeight: 5,
       },
     },
   };
@@ -127,14 +129,26 @@ function gameLoop(state) {
   const ball = state.ball;
   const leftGoal = state.leftGoal;
   const rightGoal = state.rightGoal;
+
+
   updatePlayerPosition(playerOne);
   updatePlayerPosition(playerTwo);
+
+  resolvePlayerCrossbarCollision(playerOne, playerTwo, leftGoal, rightGoal);
+
+  if(leftCrossbarCollision(ball, leftGoal)){
+    collisionResponse(ball, leftGoal);
+  }
+  if(rightCrossbarCollision(ball, rightGoal)){
+    collisionResponse(ball, rightGoal);
+  }
+
   if (collision(playerOne, playerTwo)) {
     resolvePlayerCollision(playerOne, playerTwo);
   }
   if (playerOne.kicking) {
     kickRight(playerOne, ball);
-    // console.log("player1 kicking");
+    // mconsole.log("player1 kicking");
   }
   if (playerTwo.kicking) {
     kickLeft(playerTwo, ball);
@@ -146,8 +160,10 @@ function gameLoop(state) {
   if (collision(playerTwo, ball)) {
     resolveCollision(playerTwo, ball);
   }
-  updateBall(ball, playerOne, playerTwo);
+
+  updateBall(ball, leftGoal, rightGoal);
   checkWall(ball, playerOne, playerTwo);
+
   // check for goal scored
   if(checkLeftGoal(ball, leftGoal)){
     resetGameState(state);
@@ -168,6 +184,98 @@ function gameLoop(state) {
 
   return false;
 }
+function resolvePlayerCrossbarCollision(player1, player2, leftGoal, rightGoal){
+  if(leftCrossbarCollision(player1, leftGoal)){
+    playerLeftGoalResponse(player1, leftGoal);
+  }
+  if(rightCrossbarCollision(player1, rightGoal)){
+    playerRightGoalResponse(player1, rightGoal);
+  }
+  if(leftCrossbarCollision(player2, leftGoal)){
+    playerLeftGoalResponse(player2, leftGoal);
+  }
+  if(rightCrossbarCollision(player2, rightGoal)){
+    playerRightGoalResponse(player2, rightGoal);
+  }
+
+}
+
+function playerRightGoalResponse(player, goal){
+  if(player.velocity.y < 0 && player.position.y <= goal.position.y + goal.dimensions.y - goal.dimensions.crossbarHeight && player.position.x + player.radius/2 > goal.position.x){
+    player.position.y = goal.position.y - goal.dimensions.y + goal.dimensions.crossbarHeight + player.radius + 1;
+    player.velocity.y = 0;
+  }
+  if(player.position.y <= goal.position.y - goal.dimensions.y + goal.dimensions.crossbarHeight && player.position.x + player.radius/2 > goal.position.x){
+    player.velocity.y = 0;
+    player.position.y = goal.position.y - goal.dimensions.y - player.radius;
+  }
+  if(player.position.y > goal.position.y - goal.dimensions.y - player.radius && player.position.y < goal.position.y - goal.dimensions.y + goal.dimensions.crossbarHeight + player.radius && player.position.x < goal.position.x - player.radius/2 + 2){
+    player.position.x = goal.position.x - player.radius - 1;
+  }
+}
+
+function playerLeftGoalResponse(player, goal){
+  if(player.velocity.y < 0 && player.position.y <= goal.position.y + goal.dimensions.y - goal.dimensions.crossbarHeight && player.position.x - player.radius/2< goal.dimensions.length){
+    player.position.y = goal.position.y - goal.dimensions.y + goal.dimensions.crossbarHeight + player.radius + 1;
+    player.velocity.y = 0;
+  }
+  if(player.position.y <= goal.position.y - goal.dimensions.y + goal.dimensions.crossbarHeight && player.position.x - player.radius/2< goal.dimensions.length){
+    player.velocity.y = 0;
+    player.position.y = goal.position.y - goal.dimensions.y - player.radius;
+  }
+  if(player.position.y > goal.position.y - goal.dimensions.y - player.radius && player.position.y < goal.position.y - goal.dimensions.y + goal.dimensions.crossbarHeight + player.radius && player.position.x > goal.dimensions.length + player.radius/2 - 2){
+    player.position.x = goal.dimensions.length + player.radius + 1;
+  }
+  
+}
+
+function leftCrossbarCollision(ball, goal)
+{
+    let goalX = goal.dimensions.x + (goal.dimensions.length/2);
+    let goalY = goal.position.y - goal.dimensions.y + (goal.dimensions.crossbarHeight/2);
+
+    let circleDistanceX = Math.abs(ball.position.x - goalX);
+    let circleDistanceY = Math.abs(ball.position.y - goalY);
+
+    if (circleDistanceX > (goal.dimensions.length/2 + ball.radius)) { return false; }
+    if (circleDistanceY > (goal.dimensions.crossbarHeight/2 + ball.radius)) { return false; }
+
+    if (circleDistanceX <= (goal.dimensions.length/2)) { return true; } 
+    if (circleDistanceY <= (goal.dimensions.crossbarHeight/2)) { return true; }
+
+    let cornerDistance_sq = (circleDistanceX - goal.dimensions.length/2)*(circleDistanceX - goal.dimensions.length/2) + (circleDistanceY - goal.dimensions.crossbarHeight/2)*(circleDistanceY - goal.dimensions.crossbarHeight/2);
+    return (cornerDistance_sq <= (ball.radius*ball.radius));
+}
+
+function rightCrossbarCollision(ball, goal){
+  let goalX = goal.position.x + (goal.dimensions.length/2);
+  let goalY = goal.position.y - goal.dimensions.y + (goal.dimensions.crossbarHeight/2);
+
+  let circleDistanceX = Math.abs(ball.position.x - goalX);
+  let circleDistanceY = Math.abs(ball.position.y - goalY);
+
+  if (circleDistanceX > (goal.dimensions.length/2 + ball.radius)) { return false; }
+  if (circleDistanceY > (goal.dimensions.crossbarHeight/2 + ball.radius)) { return false; }
+
+  if (circleDistanceX <= (goal.dimensions.length/2)) { return true; } 
+  if (circleDistanceY <= (goal.dimensions.crossbarHeight/2)) { return true; }
+
+  let cornerDistance_sq = (circleDistanceX - goal.dimensions.length/2)*(circleDistanceX - goal.dimensions.length/2) + (circleDistanceY - goal.dimensions.crossbarHeight/2)*(circleDistanceY - goal.dimensions.crossbarHeight/2);
+  return (cornerDistance_sq <= (ball.radius*ball.radius));
+}
+
+function collisionResponse(ball, goal){
+  if(ball.position.y <= goal.position.y - goal.dimensions.y + goal.dimensions.crossbarHeight || ball.position.y >= goal.position.y + goal.dimensions.y){
+    ball.velocity.y = ball.velocity.y * -1;
+  }
+  if(ball.position.x >= goal.position.x + goal.dimensions.length || ball.position.x <= goal.position.x){
+    if(goal.position.x == 0 && ball.velocity.x < 0){
+      ball.velocity.x = ball.velocity.x * -1;
+    }else if(goal.position.x != 0 && ball.velocity.x > 0){
+      ball.velocity.x = ball.velocity.x *= -1;
+    }
+  }
+}
 
 function checkLeftGoal(ball, goal){
   if(ball.position.x + ball.radius < goal.dimensions.length && ball.position.y - ball.radius> goal.position.y - goal.dimensions.y){
@@ -178,7 +286,7 @@ function checkLeftGoal(ball, goal){
 }
 
 function checkRightGoal(ball, goal){
-  if(ball.position.x - ball.radius > 1024 - goal.dimensions.length && ball.position.y - ball.radius> goal.position.y - goal.dimensions.y){
+  if(ball.position.x - ball.radius > 1024 - goal.dimensions.length && ball.position.y - ball.radius> goal.position.y - goal.dimensions.y ){
       return true;
   }else{
       return false;
@@ -195,8 +303,17 @@ function getNewDownVelocity(key, state, playerNumber) {
       player.ArrowLeft.pressed = true;
       break;
     case "ArrowUp":
-      if (player.position.y + player.radius >= 420) {
-        player.velocity.y = -15;
+      if (player.position.y + player.radius >= 420 ) {
+        player.velocity.y = -13.5;
+        return
+      }
+      if(player.position.x - player.radius/2 < 90 && player.position.y + player.radius > 230 && player.position.y + player.radius < 250){
+        player.velocity.y = -13.5;
+        return
+      }  
+      if(player.position.x + player.radius/2 > 934 && player.position.y + player.radius > 230 && player.position.y + player.radius < 250){
+        player.velocity.y = -13.5;
+        return
       }
       break;
   }
@@ -371,6 +488,7 @@ function updatePlayerPosition(player) {
   } else if (player.ArrowLeft.pressed) {
     player.velocity.x = -5;
   }
+
   //horizontal
   if (player.velocity.x >= 0) {
     if (player.position.x < 1024 - player.radius) {
@@ -391,7 +509,7 @@ function updatePlayerPosition(player) {
   }
 }
 
-function updateBall(ball) {
+function updateBall(ball, leftGoal, rightGoal) {
   //floor
   if (ball.position.y + ball.size + ball.velocity.y <= 420) {
     ball.velocity.y += 0.5;
@@ -424,51 +542,7 @@ function collision(circle1, circle2) {
     return true;
   return false;
 }
-/*
-function resolveCollision(particle, otherParticle) {
-  const xVelocityDiff = particle.velocity.x - otherParticle.velocity.x;
-  const yVelocityDiff = particle.velocity.y - otherParticle.velocity.y;
 
-  const xDist = otherParticle.position.x - particle.position.x;
-  const yDist = otherParticle.position.y - particle.position.y;
-
-  if (xVelocityDiff * xDist + yVelocityDiff * yDist >= 0) {
-    // Grab angle between the two colliding particles
-    const angle = -Math.atan2(
-      otherParticle.position.y - particle.position.y,
-      otherParticle.position.x - particle.position.x
-    );
-
-    // Store mass in var for better readability in collision equations
-    const m1 = particle.mass;
-    const m2 = otherParticle.mass;
-
-    // Velocity before equation
-    const u1 = rotate(particle.velocity, angle);
-    const u2 = rotate(otherParticle.velocity, angle);
-
-    const v2 = {
-      x: (u2.x * (m1 - m2)) / (m1 + m2) + (u1.x * 2 * m2) / (m1 + m2),
-      y: u2.y,
-    };
-
-    const vFinal2 = rotate(v2, -angle);
-
-    return [vFinal2.x, vFinal2.y];
-  } else {
-    return [0, 0];
-  }
-}
-*/
-
-function rotate(vel, angle) {
-  const rotatedVelocities = {
-    x: vel.x * Math.cos(angle) - vel.y * Math.sin(angle),
-    y: vel.x * Math.sin(angle) + vel.y * Math.cos(angle),
-  };
-
-  return rotatedVelocities;
-}
 
 function kickRight(player, ball) {
   if (
@@ -477,8 +551,8 @@ function kickRight(player, ball) {
     ball.position.y + ball.size >= player.position.y &&
     ball.position.y <= player.position.y + player.size + ball.size
   ) {
-    ball.velocity.y = -13;
-    ball.velocity.x *= -1;
+    ball.velocity.y = -6;
+    ball.velocity.x = Math.abs(ball.velocity.x);
     ball.velocity.x += 5;
   }
 }
@@ -491,8 +565,8 @@ function kickLeft(player, ball) {
     ball.position.y + ball.size >= player.position.y &&
     ball.position.y <= player.position.y + player.size + ball.size
   ) {
-    ball.velocity.y = -13;
-    ball.velocity.x *= -1;
+    ball.velocity.y = -6;
+    ball.velocity.x = -Math.abs(ball.velocity.x);
     ball.velocity.x -= 5;
   }
 }
