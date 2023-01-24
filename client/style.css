@@ -1,6 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Nerko+One&display=swap');
 
 body{
-    background-color: gray;
+    background-color: #1A1A1D;
     /* min-width: 1500px; */
 
 }
@@ -10,12 +11,24 @@ body{
     text-align: center;
 }
 
+#waitRematchScreen {
+    display: none;
+    text-align: center;
+}
+
+#rematchScreen {
+    display: none;
+    text-align: center;
+}
+
 #readyScreen {
     display: none;
+    text-align: center;
 }
 
 #initalScreen {
     display: block;
+    text-align: center;
 }
 
 #gameScreen {
@@ -28,31 +41,72 @@ body{
     text-align: center;
 }
 
-/* #message {
-    margin:0 auto;
-} */
-
-#welcome{
-    color:black;
-    font-size: 40px;
-    font-family: 'Nerko One', cursive;
+/* general rules */
+.center {
     text-align: center;
 }
 
-#createLobby{
-    width: 200px;
-    height: 50px;
-    border: 3px solid black;
-    background-color: lightblue;
-    position: fixed;
-    top: 30%;
-    left: 44%;
+.buttons {
+    background-color: #6F2232;
     font-weight: bold;
-    text-align: center;
-    font-size: 20px;
+    font-size: 50px;
+    font-family: 'Nerko One', cursive;
+    color: white;
+}
+
+.whiteText {
+    color: white;
     font-family: 'Nerko One', cursive;
 }
 
+/* elements in initial screen */
+#welcome{
+    /* margin-top: 50px; */
+    padding-top: 50px;
+    color: #C3073F;
+    font-size: 150px;
+    font-family: 'Nerko One', cursive;
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+#roomInput{
+    border: 3px solid black;
+    background-color: white;
+    font-weight: bold;
+    font-size: 50px;
+    font-family: 'Nerko One', cursive;
+    text-align: center;
+}
+
+#timer {
+    width: 200px;
+    font-size: 50px;
+    display: inline-block;
+    margin-left: 200px;
+    margin-right: 200px;
+    margin-bottom: 20px;
+}
+
+#score1 {
+    width: 50px;
+    font-size: 50px;
+    display: inline-block;
+    background-color: white;
+    color: #C3073F;
+    border: 2px solid #6F2232;
+}
+
+#score2 {
+    width: 50px;
+    font-size: 50px;
+    display: inline-block;
+    background-color: white;
+    color: #C3073F;
+    border: 2px solid #6F2232;
+}
+
+/* elements in game screen */
 #message{
     width: 500;
     height: 200;
@@ -60,6 +114,32 @@ body{
     font-family: 'Nerko One', cursive;
 }
 
+
+/* need this code for nicer character select, but I have no idea how it works */
+
+/* HIDE RADIO */
+[type=radio] { 
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  /* IMAGE STYLES */
+[type=radio] + img {
+    cursor: pointer;
+  }
+
+/* CHECKED STYLES */
+[type=radio]:checked + img {
+    outline: 4px solid #6F2232;
+  }
+
+  #readyButton {
+    margin-top: 30px;
+  }
+
+  /* no longer being used
 .square{
     height: 400px;
     width: 400px;
@@ -68,31 +148,4 @@ body{
     top: 20%;
     left: 37%;
     background-color: darkgrey;
-}
-
-#roomInput{
-    width: 220px;
-    height: 30px;
-    border: 3px solid black;
-    background-color: white;
-    position: fixed;
-    top: 50%;
-    left: 43%;
-    font-weight: bold;
-    text-align: center;
-    font-size: 20px;
-    font-family: 'Nerko One', cursive;
-}
-#joinRoom{
-    width: 150px;
-    height: 40px;
-    border: 3px solid black;
-    background-color: lightblue;
-    position: fixed;
-    top: 57%;
-    left: 46%;
-    font-weight: bold;
-    text-align: center;
-    font-size: 20px;
-    font-family: 'Nerko One', cursive;
-}
+} */

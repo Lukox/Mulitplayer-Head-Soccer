@@ -9,6 +9,7 @@ const {
   gameLoop,
   getNewDownVelocity,
   stopPlayerMovement,
+  resetGameState,
 } = require("./game");
 const { FRAME_RATE } = require("./constants");
 
@@ -50,13 +51,11 @@ io.on("connection", (socket) => {
     lobbies[socket.id] = room;
     socket.number = 2;
 
+    socket.broadcast.emit("number", 2);
     io.to(room).emit("successJoinRoom", room);
     // socket.broadcast.to(room).emit("successJoinRoom", room);
 
-    //start the game
-    startGameInterval(room);
-
-    socket.broadcast.to(room).emit("removeWait");
+    // socket.broadcast.to(room).emit("removeWait");
   });
 
   //creating new Room
@@ -70,7 +69,7 @@ io.on("connection", (socket) => {
     roomNames.push(roomId);
     lobbies[socket.id] = roomId;
     socket.join(roomId);
-    socket.emit("createdRoom", roomId);
+    socket.emit("createdRoom", {room: roomId, number: 1});
     socket.number = 1;
     const state = createGameState();
     states[roomId] = state;
@@ -112,12 +111,58 @@ io.on("connection", (socket) => {
     }
   }
 
+  socket.on("playerReady", (val)=>{
+    let room = lobbies[socket.id];
+    let state = states[room];
+    let otherSocketNum = 1;
+    state.players[socket.number-1].ready = true;
+    state.players[socket.number-1].char = val;
+    if(socket.number === 1){
+      otherSocketNum = 2;
+    }
+
+    //assign char
+
+    if(state.players[otherSocketNum -1].ready === true){
+      io.to(room).emit("startGame", {c1: state.players[0].char, c2: state.players[1].char});
+      //reset ready
+      state.players[0].ready = false;
+      state.players[1].ready = false;
+      
+      //start the game
+      startGameInterval(room);
+    }
+
+
+  });
+
+  socket.on("rematch", ()=>{
+    socket.broadcast.emit("rematchRequest");
+  });
+
+  socket.on("rematchAccepted", ()=>{
+    let room = lobbies[socket.id];
+    //rest game state object
+    let state = states[room];
+    state.players[0].goalsScored = 0;
+    state.players[1].goalsScored = 0;
+    state.time = 0;
+    resetGameState(state);
+
+    io.to(room).emit("successJoinRoom");
+  });
+
+  socket.on("rematchDeclined", ()=>{
+    socket.broadcast.emit("restartClient");
+  });
+
   socket.on("disconnect", () => {
     console.log("disconnect: " + socket.id);
     let room = lobbies[socket.id];
     delete lobbies[socket.id];
 
     let index = roomNames.indexOf(room);
+    //not sure what this next line actually does
     roomNames.splice(index, 1);
     if (!Object.values(lobbies).includes(room)) {
       delete states[room];

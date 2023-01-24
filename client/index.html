@@ -11,35 +11,61 @@
 
     <div id="initialScreen">
         <h1 id="welcome">HeadFootball</h1>
-        <div class="square"></div>
-        <button id="createLobby">create new lobby</button>
+        <div class="center"><button id="createLobby" class="buttons">create new lobby</button></div>
         <br>
-        <input id="roomInput" type="text"><button id="joinRoom">Join a lobby</button>
+        <div class="center"><input id="roomInput" type="text"></div>
         <br>
+        <div class="center""><button id="joinRoom" class="buttons">Join a lobby</button></div>
     </div>
 
     <div id="waitScreen">
-        <h1>Waiting for friend to Join!</h1>
-        <div id="message"></div>
-        <!-- <button id="createGame">Create Game</button> -->
+        <h1 class="whiteText">Waiting for friend to Join!</h1>
+        <div id="message" class="whiteText"></div>
     </div>
 
-    <!-- not yet added -->
+    <!-- about to be added -->
     <div id="readyScreen">
-        <h1>Ready? (and/or eventually potential character select)</h1>
-        <button id="readyButton">Ready?</button>
+        <h1 class="whiteText">Choose your hero!!</h1>
+        <label>
+            <input type="radio" value="1" name="playerSelect" checked="checked">
+            <img src="./assets/son.png" style="width:200px;height:200px;">
+        </label>
+        <label>
+            <input type="radio" value="2" name="playerSelect">
+            <img src="./assets/benzema_shoe_right.png" style="width:200px;height:200px;">  
+        </label>
+        <label>
+            <input type="radio" value="3" name="playerSelect">
+            <img src="./assets/mbappe_shoe_right.png" style="width:200px;height:200px;">  
+        </label>
+        <br>
+        <button id="readyButton" class="buttons">Ready!</button>
+    </div>
+
+    <div id="waitRematchScreen">
+        <h1 class="whiteText">Waiting for opponent to accept rematch!</h1>
+    </div>
+
+    <div id="rematchScreen">
+        <h1 class="whiteText">Opponent wants a rematch</h1>
+        <button id="acceptRematch" class="buttons">Accept</button>
+        <button id="declineRematch" class="buttons">Decline</button>
     </div>
 
     <div id="gameScreen">
-        <div id="timer">60</div>
-        <div id="score"></div>
+        <div>
+            <div id="score1" class="whiteText"></div>
+            <div id="timer" class="whiteText">60</div>
+            <div id="score2" class="whiteText"></div>
+        </div>
         <canvas></canvas>
     </div>
 
     <div id="endScreen">
-        <h1>Thank you for playing!</h1>
-        <h1 id="victoryMsg"></h1>
-        <button id="playAgain">Play Again</button>
+        <h1 class="whiteText">Thank you for playing!</h1>
+        <h1 id="victoryMsg" class="whiteText"></h1>
+        <button id="home" class="buttons">Home</button>
+        <button id="rematch" class="buttons">Rematch</button>
     </div>
 
     <script src="http://localhost:3000/socket.io/socket.io.js"></script>

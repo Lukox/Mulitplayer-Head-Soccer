@@ -3,6 +3,7 @@ module.exports = {
   gameLoop,
   getNewDownVelocity,
   stopPlayerMovement,
+  resetGameState,
 };
 
 function resetGameState(state) {
@@ -32,8 +33,6 @@ function createGameState() {
         position: {
           x: 256,
           y: 100,
-          prevX: 100,
-          prevY: 100,
         },
         velocity: {
           x: 0,
@@ -51,6 +50,8 @@ function createGameState() {
         radius: 50,
         kicking: false,
         goalsScored: 0,
+        ready: false,
+        char: 1,
       },
       {
         position: {
@@ -73,6 +74,8 @@ function createGameState() {
         radius: 50,
         kicking: false,
         goalsScored: 0,
+        ready: false,
+        char: 1,
       },
     ],
     ball: {
